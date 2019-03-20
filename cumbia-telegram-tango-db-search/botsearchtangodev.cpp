@@ -2,8 +2,9 @@
 #include <tango.h>
 #include <QtDebug>
 
-BotSearchTangoDev::BotSearchTangoDev(QObject *parent) : QObject(parent)
+BotSearchTangoDev::BotSearchTangoDev(QObject *parent, int chat_id) : QObject(parent)
 {
+    m_chat_id = chat_id;
 }
 
 BotSearchTangoDev::~BotSearchTangoDev()
@@ -36,17 +37,10 @@ QStringList BotSearchTangoDev::devices() const
     return m_devlist;
 }
 
-void BotSearchTangoDev::signalTtlExpired()
-{
-    printf("\e[1;31mBotSearchTangoDev::signalTtlExpired chat_id NOT INITIALIZED!!!\e[0m\n");
-    emit volatileOperationExpired(m_chat_id, name(), "search " + m_pattern);
-}
-
 void BotSearchTangoDev::onSearchFinished()
 {
     m_devlist = qobject_cast<TgDevSearchThread *>(sender())->devices;
     sender()->deleteLater();
-    printf("\e[1;31mBotSearchTangoDev::onSearchFinished chat_id NOT INITIALIZED!!!\e[0m\n");
     emit devListReady(m_chat_id, m_devlist);
 }
 
@@ -66,64 +60,4 @@ void TgDevSearchThread::run()
     dbd >> devs;
     for(size_t i = 0; i < devs.size(); i++)
         devices << QString::fromStdString(devs[i]);
-}
-
-/**
- * @brief BotSearchTangoDev::consume consume the life of this object if the input type is not AttSearch
- *
- * @param t the type of message that causes this VolatileOperation to consume itself or not
- */
-void BotSearchTangoDev::consume(int moduletyp)
-{
-    QVariant att_search_type = CuBotModule::getOption("att_search_type");
-    if(!att_search_type.isValid() || moduletyp != att_search_type.toInt())
-        d_life_cnt--;
-}
-
-int BotSearchTangoDev::type() const
-{
-    return DevSearch;
-}
-
-QString BotSearchTangoDev::name() const
-{
-    return "Tango device search";
-}
-
-int BotSearchTangoDev::decode(const TBotMsg &msg)
-{
-}
-
-bool BotSearchTangoDev::process()
-{
-}
-
-bool BotSearchTangoDev::error() const
-{
-}
-
-QString BotSearchTangoDev::message() const
-{
-}
-
-bool BotSearchTangoDev::isVolatileOperation() const
-{
-    return true;
-}
-
-QString BotSearchTangoDev::description() const
-{
-    return "cumbia-telegram plugin to search devices on the tango database";
-}
-
-QString BotSearchTangoDev::help() const
-{
-    return "cumbia-telegram bot plugin to find tango devices from the database";
-}
-
-void BotSearchTangoDev::init(CuBotModuleListener *listener, BotDb *db, BotConfig *bot_conf)
-{
-    setBotmoduleListener(listener);
-    setDb(db);
-    setConf(bot_conf);
 }

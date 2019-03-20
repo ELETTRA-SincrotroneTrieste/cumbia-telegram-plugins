@@ -2,7 +2,7 @@
 #define BOTSEARCHTANGOATT_H
 
 #include "cubotvolatileoperation.h"
-#include "tbotmsgdecoder.h"
+
 #include <QStringList>
 #include <QThread>
 
@@ -22,7 +22,7 @@ private:
     QString m_devname;
 };
 
-class BotSearchTangoAtt : public QObject, public CuBotVolatileOperation
+class BotSearchTangoAtt : public QObject
 {
     Q_OBJECT
 public:
@@ -46,8 +46,6 @@ public:
 signals:
     void attListReady(int chat_id, const QString& device, const QStringList& devs);
 
-    void volatileOperationExpired(int chat_id, const QString& name, const QString& text);
-
 private slots:
     void onSearchFinished();
 
@@ -55,13 +53,9 @@ private:
     QStringList m_attlist;
     QString m_devname;
     int m_chat_id;
+    bool d_error;
+    QString d_msg;
 
-    // VolatileOperation interface
-public:
-    void consume(int moduletyp);
-    int type() const;
-    QString name() const;
-    void signalTtlExpired();
 };
 
 #endif // BOTSEARCHTANGOATT_H

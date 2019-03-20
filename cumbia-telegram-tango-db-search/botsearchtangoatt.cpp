@@ -57,16 +57,6 @@ void BotSearchTangoAtt::onSearchFinished()
     emit attListReady(m_chat_id, m_devname, m_attlist);
 }
 
-void BotSearchTangoAtt::signalTtlExpired()
-{
-    emit volatileOperationExpired(m_chat_id, name(), "attlist " + m_devname);
-}
-
-QString BotSearchTangoAtt::name() const
-{
-    return "search tango device attributes";
-}
-
 TgAttSearchThread::TgAttSearchThread(QObject *parent, const QString &devname) : QThread(parent)
 {
     m_devname = devname;
@@ -87,20 +77,12 @@ void TgAttSearchThread::run()
     }
 }
 
-/**
- * @brief BotSearchTangoAtt::consume consume the life of this object if the input type is not AttSearch
- *
- * @param t the type of message that causes this VolatileOperation to consume itself or not
- */
-void BotSearchTangoAtt::consume(int moduletyp)
-{
-    printf("\e[1;31m*** FIX BotSearchTangoAtt::consume moduletyp\e[0m\n");
-    if(moduletyp != TBotMsgDecoder::ReadFromAttList && moduletyp != TBotMsgDecoder::Read) {
-        d_life_cnt--;
-    }
-}
 
-int BotSearchTangoAtt::type() const
-{
-    return AttSearch;
-}
+//void BotSearchTangoAtt::consume(int moduletyp)
+//{
+//    printf("\e[1;31m*** FIX BotSearchTangoAtt::consume moduletyp\e[0m\n");
+//    if(moduletyp != TBotMsgDecoder::ReadFromAttList && moduletyp != TBotMsgDecoder::Read) {
+//        d_life_cnt--;
+//    }
+//}
+
