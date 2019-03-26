@@ -20,12 +20,12 @@ private:
     QString m_pattern;
 };
 
-class BotSearchTangoDev : public QObject
+class BotSearchTangoDev : public QObject, public CuBotVolatileOperation
 {
     Q_OBJECT
 
 public:
-    enum Type { DevSearch = 0 };
+    enum Type { Bot_SearchTangoDev = 0 };
 
     BotSearchTangoDev(QObject *parent, int chat_id);
 
@@ -53,6 +53,14 @@ private:
     bool d_error;
     QString d_msg;
 
+
+    // CuBotVolatileOperation interface
+public:
+    void consume(int module_type);
+    bool disposeWhenOver() const;
+    int type() const;
+    QString name() const;
+    void signalTtlExpired();
 };
 
 #endif // BOTSEARCHTANGODEV_H

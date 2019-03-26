@@ -1,3 +1,7 @@
 CONFIG += ordered
 TEMPLATE = subdirs
-SUBDIRS=plot-generator
+SUBDIRS=cumbia-telegram-tango-db-search  \
+    cumbia-telegram-exec-history-links \
+    cumbia-telegram-history \
+    cumbia-telegram-exec-last \
+    cumbia-telegram-bookmarks

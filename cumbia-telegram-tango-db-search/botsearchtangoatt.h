@@ -22,11 +22,11 @@ private:
     QString m_devname;
 };
 
-class BotSearchTangoAtt : public QObject
+class BotSearchTangoAtt : public QObject, public CuBotVolatileOperation
 {
     Q_OBJECT
 public:
-    enum Type { AttSearch = 0x02 };
+    enum Type { Bot_SearchTangoAtt = 0x02 };
 
     BotSearchTangoAtt(QObject *parent, int chatid);
 
@@ -45,6 +45,7 @@ public:
 
 signals:
     void attListReady(int chat_id, const QString& device, const QStringList& devs);
+    void volatileOperationExpired(int chat_id, const QString& name, const QString& text);
 
 private slots:
     void onSearchFinished();
@@ -56,6 +57,14 @@ private:
     bool d_error;
     QString d_msg;
 
+
+    // CuBotVolatileOperation interface
+public:
+    void consume(int type);
+    bool disposeWhenOver() const;
+    int type() const;
+    QString name() const;
+    void signalTtlExpired();
 };
 
 #endif // BOTSEARCHTANGOATT_H

@@ -1,5 +1,7 @@
 #include "botsearchtangodev.h"
+#include "cutelegramtangodbsearchplugin.h" // for enum SearchMode { Invalid = 0, DevSearch, AttSearch, ReadFromAttList };
 #include <tango.h>
+#include <cumacros.h>
 #include <QtDebug>
 
 BotSearchTangoDev::BotSearchTangoDev(QObject *parent, int chat_id) : QObject(parent)
@@ -12,7 +14,8 @@ BotSearchTangoDev::~BotSearchTangoDev()
     TgDevSearchThread *th = findChild<TgDevSearchThread *>();
     if(th)
         th->wait();
-    printf("\e[1;31mx BotSearchTangoDev %p\e[0m\n", this);
+    printf("\e[1;31mx BotSearchTangoDev %p (as CuBotVolatileOperation: %p) %s\e[0m\n",
+           this, static_cast<CuBotVolatileOperation *>(this), qstoc(m_pattern));
 }
 
 void BotSearchTangoDev::find(const QString &pattern)
@@ -60,4 +63,31 @@ void TgDevSearchThread::run()
     dbd >> devs;
     for(size_t i = 0; i < devs.size(); i++)
         devices << QString::fromStdString(devs[i]);
+}
+
+
+void BotSearchTangoDev::consume(int typ)
+{
+    if(typ != CuTelegramTangoDbSearchPlugin::AttSearch)
+        d_life_cnt--;
+}
+
+bool BotSearchTangoDev::disposeWhenOver() const
+{
+    return true;
+}
+
+int BotSearchTangoDev::type() const
+{
+    return Bot_SearchTangoDev;
+}
+
+QString BotSearchTangoDev::name() const
+{
+    return "BotSearchTangoDev";
+}
+
+void BotSearchTangoDev::signalTtlExpired()
+{
+    emit volatileOperationExpired(m_chat_id, name(),  "search " + m_pattern);
 }

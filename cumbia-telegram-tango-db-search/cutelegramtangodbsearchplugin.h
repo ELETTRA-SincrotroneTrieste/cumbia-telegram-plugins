@@ -5,7 +5,9 @@
 #include <cubotvolatileoperation.h>
 #include <cubotplugininterface.h>
 
-class CuTelegramTangoDbSearchPlugin : public QObject, public CuBotVolatileOperation, CuBotPluginInterface
+class CuTelegramTangoDbSearchPluginPrivate;
+
+class CuTelegramTangoDbSearchPlugin : public QObject, public CuBotPluginInterface
 {
     Q_OBJECT
 public:
@@ -25,14 +27,6 @@ public:
 
     void reset();
 
-    // VolatileOperation interface
-public:
-    void consume(int moduletyp);
-    int type() const;
-    QString name() const;
-    void signalTtlExpired();
-    bool disposeWhenOver() const;
-
     // CuBotModule interface
 public:
     QString description() const;
@@ -51,9 +45,6 @@ private slots:
     void m_onTgDevListSearchReady(int chat_id, const QStringList &devs);
     void m_onTgAttListSearchReady(int chat_id, const QString &devname, const QStringList &atts);
 
-signals:
-    void volatileOperationExpired(int chat_id, const QString& name, const QString& text);
-
 private:
 
     QString m_errorVolatileSequence_msg(const QStringList &seq) const;
@@ -61,11 +52,12 @@ private:
     QString tg_devSearchList_msg(const QStringList& devs) const;
     QString tg_attSearchList_msg(const QString &devname, const QStringList& atts) const;
 
-    SearchMode m_mode;
-    QString m_devnam, m_msg;
-    int m_index;
-    TBotMsg m_tbotmsg;
-    bool m_err;
+    CuTelegramTangoDbSearchPluginPrivate *d;
+
+    // CuBotModule interface
+public:
+    int type() const;
+    QString name() const;
 };
 
 #endif // CUTELEGRAMTANGODBSEARCHPLUGIN_H

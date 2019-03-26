@@ -1,4 +1,5 @@
 #include "botsearchtangoatt.h"
+#include <cutelegramtangodbsearchplugin.h> // for enum SearchMode { Invalid = 0, DevSearch, AttSearch, ReadFromAttList };
 #include <tango.h>
 #include <cutango-world.h>
 
@@ -77,12 +78,30 @@ void TgAttSearchThread::run()
     }
 }
 
+void BotSearchTangoAtt::consume(int type)
+{
+    printf("\e[1;31m*** FIX BotSearchTangoAtt::consume moduletyp\e[0m\n");
+    if(type != CuTelegramTangoDbSearchPlugin::ReadFromAttList) {
+        d_life_cnt--;
+    }
+}
 
-//void BotSearchTangoAtt::consume(int moduletyp)
-//{
-//    printf("\e[1;31m*** FIX BotSearchTangoAtt::consume moduletyp\e[0m\n");
-//    if(moduletyp != TBotMsgDecoder::ReadFromAttList && moduletyp != TBotMsgDecoder::Read) {
-//        d_life_cnt--;
-//    }
-//}
+bool BotSearchTangoAtt::disposeWhenOver() const
+{
+    return true;
+}
 
+int BotSearchTangoAtt::type() const
+{
+    return Bot_SearchTangoAtt;
+}
+
+QString BotSearchTangoAtt::name() const
+{
+    return "BotSearchTangoAtt";
+}
+
+void BotSearchTangoAtt::signalTtlExpired()
+{
+    emit volatileOperationExpired(m_chat_id, name(), "attlist " + m_devname);
+}
