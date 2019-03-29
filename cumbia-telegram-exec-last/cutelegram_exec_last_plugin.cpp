@@ -53,7 +53,7 @@ int CuTgExecLastPlugin::type() const {
 
 QString CuTgExecLastPlugin::name() const
 {
-    return "ExecLastCommand";
+    return "last";
 }
 
 QString CuTgExecLastPlugin::description() const {

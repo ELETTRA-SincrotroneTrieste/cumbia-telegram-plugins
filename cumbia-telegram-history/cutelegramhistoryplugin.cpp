@@ -77,7 +77,7 @@ int CuTelegramHistoryPlugin::type() const {
 
 QString CuTelegramHistoryPlugin::name() const
 {
-    return "History";
+    return "history";
 }
 
 QString CuTelegramHistoryPlugin::description() const {

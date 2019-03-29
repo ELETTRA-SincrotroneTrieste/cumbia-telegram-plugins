@@ -10,7 +10,7 @@ CONFIG+=link_pkgconfig
 PKGCONFIG += tango cumbia cumbia-tango
 
 # for qwt
-QT += gui
+QT += sql
 CONFIG += plugin
 
 VERSION = 1.0.0

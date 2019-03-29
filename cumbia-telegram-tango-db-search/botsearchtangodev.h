@@ -10,14 +10,18 @@ class TgDevSearchThread : public QThread
 {
     Q_OBJECT
 public:
-    TgDevSearchThread(QObject *parent, const QString& pattern);
+    TgDevSearchThread(QObject *parent, const QString& pattern, const QString& host);
 
     void run();
+
+    bool error() const;
+
+    QString message() const;
 
     QStringList devices;
 
 private:
-    QString m_pattern;
+    QString m_pattern, m_host, m_errmsg;
 };
 
 class BotSearchTangoDev : public QObject, public CuBotVolatileOperation
@@ -31,7 +35,7 @@ public:
 
     virtual ~BotSearchTangoDev();
 
-    void find(const QString& pattern);
+    void find(const QString& patter, const QString& host);
 
     QString getDevByIdx(int idx);
 
@@ -39,7 +43,7 @@ public:
 
 
 signals:
-    void devListReady(int chat_id, const QStringList& devs);
+    void devListReady(int chat_id, const QStringList& devs, const QString& msg);
 
     void volatileOperationExpired(int chat_id, const QString& name, const QString& text);
 
@@ -49,7 +53,7 @@ private slots:
 private:
     QStringList m_devlist;
     int m_chat_id;
-    QString m_pattern;
+    QString m_pattern, m_host;
     bool d_error;
     QString d_msg;
 

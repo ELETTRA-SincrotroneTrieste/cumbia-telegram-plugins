@@ -10,7 +10,7 @@ class TgAttSearchThread : public QThread
 {
     Q_OBJECT
 public:
-    TgAttSearchThread(QObject *parent, const QString& devname);
+    TgAttSearchThread(QObject *parent, const QString& devname, const QString& host);
 
     void run();
 
@@ -19,7 +19,7 @@ public:
     QString errmsg;
 
 private:
-    QString m_devname;
+    QString m_devname, m_host;
 };
 
 class BotSearchTangoAtt : public QObject, public CuBotVolatileOperation
@@ -32,7 +32,7 @@ public:
 
     virtual ~BotSearchTangoAtt();
 
-    void find(const QString& devname);
+    void find(const QString& devname, const QString& host);
 
     QString getAttByIdx(int idx);
 
@@ -42,9 +42,11 @@ public:
 
     QStringList attributes() const;
 
+    QString message() const;
+
 
 signals:
-    void attListReady(int chat_id, const QString& device, const QStringList& devs);
+    void attListReady(int chat_id, const QString& device, const QStringList& devs, const QString& msg);
     void volatileOperationExpired(int chat_id, const QString& name, const QString& text);
 
 private slots:

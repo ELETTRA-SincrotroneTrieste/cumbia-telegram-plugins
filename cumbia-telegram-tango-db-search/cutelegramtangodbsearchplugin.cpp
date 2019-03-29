@@ -3,6 +3,7 @@
 #include "botsearchtangodev.h"
 #include <cubotvolatileoperations.h>
 #include <cudata.h>
+#include <botdb.h>
 
 #include <QRegularExpression>
 #include <QRegularExpressionMatch>
@@ -11,7 +12,7 @@
 class CuTelegramTangoDbSearchPluginPrivate {
 public:
     CuTelegramTangoDbSearchPlugin::SearchMode m_mode;
-    QString m_devnam, m_msg;
+    QString m_devnam, m_msg, m_host;
     int m_index;
     TBotMsg m_tbotmsg;
     CuBotVolatileOperations volatile_ops;
@@ -36,7 +37,7 @@ void CuTelegramTangoDbSearchPlugin::reset()
     d->m_index =  -1;
     d->m_tbotmsg = TBotMsg();
     d->m_err = false;
-    d->m_msg = QString();
+    d->m_msg = d->m_devnam = QString();
 }
 
 int CuTelegramTangoDbSearchPlugin::decode(const TBotMsg &msg)
@@ -48,7 +49,7 @@ int CuTelegramTangoDbSearchPlugin::decode(const TBotMsg &msg)
     QRegularExpression re;
     QRegularExpressionMatch match;
     const char *tg_section_match = "[A-Za-z0-9_\\.\\*]";
-    re.setPattern(QString("search\\s+(%1*/%1*/%1)").arg(tg_section_match));
+    re.setPattern(QString("search\\s+(.+)")/*.arg(tg_section_match))*/);
     match = re.match(text);
     if(match.hasMatch()) {
         d->m_mode = DevSearch;
@@ -83,18 +84,20 @@ bool CuTelegramTangoDbSearchPlugin::process()
 {
     d->m_err = false;
     d->m_msg = QString();
+    QString host = getDb()->getSelectedHost(d->m_tbotmsg.chat_id);
     if(d->m_mode == DevSearch) {
         BotSearchTangoDev * devSearch = new BotSearchTangoDev(this,  d->m_tbotmsg.chat_id);
-        connect(devSearch, SIGNAL(devListReady(int, QStringList)), this, SLOT(m_onTgDevListSearchReady(int, QStringList)));
+        connect(devSearch, SIGNAL(devListReady(int, QStringList, QString)),
+                this, SLOT(m_onTgDevListSearchReady(int, QStringList, QString)));
         connect(devSearch, SIGNAL(volatileOperationExpired(int,QString,QString)),
                 this, SLOT(onVolatileOperationExpired(int,QString,QString)));
-        devSearch->find(d->m_devnam);
+        devSearch->find(d->m_devnam, host);
         d->volatile_ops.replaceOperation(d->m_tbotmsg.chat_id, devSearch);
     }
     else if(d->m_mode == AttSearch) {
         QString devname;
         if(d->m_index < 0) { // attlist  tango/dev/name
-            devname =d-> m_devnam; // will contain tango device name
+            devname =d->m_devnam; // will contain tango device name
         }
         else {
             BotSearchTangoDev *sd = findChild<BotSearchTangoDev *>();
@@ -104,11 +107,11 @@ bool CuTelegramTangoDbSearchPlugin::process()
         }
         if(!devname.isEmpty()) {
             BotSearchTangoAtt *sta = new BotSearchTangoAtt(this, d->m_tbotmsg.chat_id);
-            connect(sta, SIGNAL(attListReady(int, QString, QStringList)),
-                    this, SLOT(m_onTgAttListSearchReady(int, QString, QStringList)));
+            connect(sta, SIGNAL(attListReady(int, QString, QStringList,QString)),
+                    this, SLOT(m_onTgAttListSearchReady(int, QString, QStringList,QString)));
             connect(sta, SIGNAL(volatileOperationExpired(int, QString,QString)),
                     this, SLOT(onVolatileOperationExpired(int, QString,QString)));
-            sta->find(devname);
+            sta->find(devname, host);
             d->volatile_ops.replaceOperation(d->m_tbotmsg.chat_id, sta);
         }
         else {
@@ -133,17 +136,24 @@ bool CuTelegramTangoDbSearchPlugin::process()
     return !d->m_err;
 }
 
-void CuTelegramTangoDbSearchPlugin::m_onTgDevListSearchReady(int chat_id, const QStringList &devs)
+void CuTelegramTangoDbSearchPlugin::m_onTgDevListSearchReady(int chat_id, const QStringList &devs, const QString &message)
 {
     qDebug() << __PRETTY_FUNCTION__ << chat_id << devs;
-    getModuleListener()->onSendMessageRequest(chat_id, tg_devSearchList_msg(devs));
+    getModuleListener()->onSendMessageRequest(chat_id, tg_devSearchList_msg(devs, message));
     getModuleListener()->onStatsUpdateRequest(chat_id, CuData("err", false));// CuData is passed for error stats
 }
 
-void CuTelegramTangoDbSearchPlugin::m_onTgAttListSearchReady(int chat_id, const QString& devname, const QStringList &atts)
+void CuTelegramTangoDbSearchPlugin::m_onTgAttListSearchReady(int chat_id, const QString& devname,
+                                                             const QStringList &atts, const QString& msg)
 {
-    getModuleListener()->onSendMessageRequest(chat_id, tg_attSearchList_msg(devname, atts));
+    getModuleListener()->onSendMessageRequest(chat_id, tg_attSearchList_msg(devname, atts, msg));
     getModuleListener()->onStatsUpdateRequest(chat_id, CuData("err", false)); // CuData is passed for error stats
+}
+
+void CuTelegramTangoDbSearchPlugin::onVolatileOperationExpired(int i, const QString &s, const QString &t)
+{
+    printf("\e[1;35mCuTelegramTangoDbSearchPlugin.onVolatileOperationExpired: %d %s %s\e[0m\n",
+           i, qstoc(s), qstoc(t));
 }
 
 bool CuTelegramTangoDbSearchPlugin::error() const
@@ -164,6 +174,16 @@ bool CuTelegramTangoDbSearchPlugin::isVolatileOperation() const
 QString CuTelegramTangoDbSearchPlugin::description() const
 {
     return "cumbia-telegram plugin to search devices on the tango database";
+}
+
+int CuTelegramTangoDbSearchPlugin::type() const
+{
+    return TangoDbSearch;
+}
+
+QString CuTelegramTangoDbSearchPlugin::name() const
+{
+    return "search";
 }
 
 QString CuTelegramTangoDbSearchPlugin::help() const
@@ -191,25 +211,25 @@ QString CuTelegramTangoDbSearchPlugin::m_errorVolatileSequence_msg(const QString
     return s;
 }
 
-QString CuTelegramTangoDbSearchPlugin::tg_devSearchList_msg(const QStringList &devs) const
+QString CuTelegramTangoDbSearchPlugin::tg_devSearchList_msg(const QStringList &devs, const QString& message) const
 {
     QString s;
     if(devs.isEmpty())
-        s = "😞   No device found matching the given pattern";
+        s = "😞   No device found matching the given pattern: " + message;
     else {
         s = QString("<b>%1 DEVICES</b>\n\n").arg(devs.size());
         for(int i = 0; i < devs.size(); i++) {
-            s += QString("%1: <i>" + devs[i] + "</i>   [/attlist%1]\n").arg(i+1);
+            s += QString("%1: " + devs[i] + "   [/attlist%1]\n").arg(i+1);
         }
     }
     return s;
 }
 
-QString CuTelegramTangoDbSearchPlugin::tg_attSearchList_msg(const QString &devname, const QStringList &atts) const
+QString CuTelegramTangoDbSearchPlugin::tg_attSearchList_msg(const QString &devname, const QStringList &atts, const QString &message) const
 {
     QString s;
     if(atts.isEmpty())
-        s = "😞   No attributes found within the device <i>" + devname + "</i>\n";
+        s = "😞   No attributes found in device <i>" + devname + "</i>: " + message + "\n";
     else {
         s = QString("<b>%1 ATTRIBUTES</b> from <i>%2</i>\n\n").arg(atts.size()).arg(devname);
         for(int i = 0; i < atts.size(); i++) {
@@ -219,12 +239,3 @@ QString CuTelegramTangoDbSearchPlugin::tg_attSearchList_msg(const QString &devna
     return s;
 }
 
-int CuTelegramTangoDbSearchPlugin::type() const
-{
-    return TangoDbSearch;
-}
-
-QString CuTelegramTangoDbSearchPlugin::name() const
-{
-    return "TangoDbSearch";
-}

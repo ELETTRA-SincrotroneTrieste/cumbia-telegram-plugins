@@ -42,15 +42,16 @@ public:
     void init(CuBotModuleListener *listener, BotDb *db, BotConfig *bot_conf);
 
 private slots:
-    void m_onTgDevListSearchReady(int chat_id, const QStringList &devs);
-    void m_onTgAttListSearchReady(int chat_id, const QString &devname, const QStringList &atts);
+    void m_onTgDevListSearchReady(int chat_id, const QStringList &devs, const QString& message);
+    void m_onTgAttListSearchReady(int chat_id, const QString &devname, const QStringList &atts, const QString& msg);
+    void onVolatileOperationExpired(int,const QString& , const QString& );
 
 private:
 
     QString m_errorVolatileSequence_msg(const QStringList &seq) const;
 
-    QString tg_devSearchList_msg(const QStringList& devs) const;
-    QString tg_attSearchList_msg(const QString &devname, const QStringList& atts) const;
+    QString tg_devSearchList_msg(const QStringList& devs, const QString &message) const;
+    QString tg_attSearchList_msg(const QString &devname, const QStringList& atts, const QString &message) const;
 
     CuTelegramTangoDbSearchPluginPrivate *d;
 

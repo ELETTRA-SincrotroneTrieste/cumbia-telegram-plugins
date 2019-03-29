@@ -71,7 +71,7 @@ int CuTgExHistLnkPlugin::type() const {
 
 QString CuTgExHistLnkPlugin::name() const
 {
-    return "XecHistoryLinX";
+    return "cmdshortcuts";
 }
 
 QString CuTgExHistLnkPlugin::description() const {

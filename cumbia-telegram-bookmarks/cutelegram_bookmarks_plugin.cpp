@@ -70,7 +70,7 @@ int CuTgBookmarksPlugin::type() const {
 
 QString CuTgBookmarksPlugin::name() const
 {
-    return "Bookmarks";
+    return "bookmarks";
 }
 
 QString CuTgBookmarksPlugin::description() const {
