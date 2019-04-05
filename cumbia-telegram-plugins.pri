@@ -4,14 +4,20 @@
 #
 #-------------------------------------------------
 
-QT       += core
-
+#
+#       customization section
+#
+INSTALL_ROOT = /usr/local/cumbia-telegram
 CUMBIA_TELEGRAM_ROOT = /usr/local/cumbia-telegram
+PLUGIN_TARGET_DIR = $${INSTALL_ROOT}/lib/plugins
+#
+#      end of customization section
+#
+
 CUMBIA_TELEGRAM_INCLUDES = $${CUMBIA_TELEGRAM_ROOT}/include
 CUMBIA_TELEGRAM_LIB = $${CUMBIA_TELEGRAM_ROOT}/lib
 
-INSTALL_ROOT = /usr/local/cumbia-telegram
-PLUGIN_TARGET_DIR = $${INSTALL_ROOT}/lib/plugins
+QT       += core
 
 DISTFILES += cumbia-telegram-plugins.json
 
