@@ -7,8 +7,13 @@
 #
 #       customization section
 #
-INSTALL_ROOT = /usr/local/cumbia-telegram
-CUMBIA_TELEGRAM_ROOT = /usr/local/cumbia-telegram
+#
+isEmpty(INSTALL_ROOT) {
+	INSTALL_ROOT = /usr/local/cumbia-telegram
+}
+isEmpty(CUMBIA_TELEGRAM_ROOT) {
+	CUMBIA_TELEGRAM_ROOT = /usr/local/cumbia-telegram
+}
 PLUGIN_TARGET_DIR = $${INSTALL_ROOT}/lib/plugins
 #
 #      end of customization section
