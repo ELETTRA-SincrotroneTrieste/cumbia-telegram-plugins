@@ -100,9 +100,13 @@ bool CuTelegramTangoDbSearchPlugin::process()
             devname =d->m_devnam; // will contain tango device name
         }
         else {
-            BotSearchTangoDev *sd = findChild<BotSearchTangoDev *>();
+            BotSearchTangoDev *sd =
+                    static_cast<BotSearchTangoDev *>(d->volatile_ops.get(d->m_tbotmsg.chat_id, BotSearchTangoDev::Bot_SearchTangoDev));
             if(sd) {
                 devname = sd->getDevByIdx(d->m_index);
+            } else {
+                QStringList sequence = QStringList() << "search PATTERN" << QString("/attlist%1").arg(d->m_index);
+                getModuleListener()->onSendMessageRequest(d->m_tbotmsg.chat_id, m_errorVolatileSequence_msg(sequence));
             }
         }
         if(!devname.isEmpty()) {
@@ -121,7 +125,7 @@ bool CuTelegramTangoDbSearchPlugin::process()
     }
     else if(d->m_mode == ReadFromAttList) {
         QString src;
-        BotSearchTangoAtt* sta = findChild<BotSearchTangoAtt *>();
+        BotSearchTangoAtt* sta = static_cast<BotSearchTangoAtt *>(d->volatile_ops.get(d->m_tbotmsg.chat_id, BotSearchTangoAtt::Bot_SearchTangoAtt));
         if(!sta) {
             QStringList sequence = QStringList() << "search PATTERN" << "/attlist{IDX}"
                                                  << QString("/a%1_read" ).arg(d->m_index);
