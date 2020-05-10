@@ -68,11 +68,11 @@ int CuTgCommentsPlugin::decode(const TBotMsg &msg)
 
 bool CuTgCommentsPlugin::process()
 {
-    CuBotModuleListener *lis = getModuleListener();
-    QString msg = d->tbotmsg.text();
-    QString s = QString("<b>%1</b> says:\n<i>%2</i>").arg(d->tbotmsg.username)
-            .arg(msg.remove(0,2).trimmed());
-    lis->onSendMessageRequest(d->tbotmsg.chat_id, s);
+//    CuBotModuleListener *lis = getModuleListener();
+//    QString msg = d->tbotmsg.text();
+//    QString s = QString("<b>%1</b> says:\n<i>%2</i>").arg(d->tbotmsg.username)
+//            .arg(msg.remove(0,2).trimmed());
+//    lis->onSendMessageRequest(d->tbotmsg.chat_id, s);
     return true;
 }
 
